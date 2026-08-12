@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
+import { SYSTEM_PROMPT } from "./prompt";
 
 const debateSeeds = JSON.parse(
     readFileSync(new URL("./debate-message.seed.json", import.meta.url))
@@ -30,8 +31,7 @@ const response = await openai.responses.parse({
     input: [
         {
             role: "system",
-            content:
-                "입력은 일대일 토론 대화 스크립트이며, 답변은 토론 대결의 결과 판정이다. 이때 penalty_score 필드에는 만약 토론자가 욕설, 토론과 관계없는 발언, 예의없는 발언을 했을 때 재량으로 최대 10점을 부여하도록 한다. penalty를 크게 부여할수록 점수를 크게 부여한다. 그러한 사항이 없으면 0점이다. ",
+            content: SYSTEM_PROMPT
         },
         { role: "user", content: JSON.stringify(debate) },
     ],
