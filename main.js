@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
-import { SYSTEM_PROMPT_PERFORMANCE, SYSTEM_PROMPT_VIOLATION } from "./prompt.js";
+import { SYSTEM_PROMPT_PERFORMANCE, SYSTEM_PROMPT_PREVIOUS, SYSTEM_PROMPT_VIOLATION } from "./prompt.js";
 
 const debateSeeds = JSON.parse(
     readFileSync(new URL("./debate-message.seed.json", import.meta.url))
@@ -12,6 +12,39 @@ const debate = debateSeeds.find(
 );
 
 const openai = new OpenAI();
+
+// 초기 버전 (8/12)
+const ParticipantJudging = z.object({
+    score: z.number().int().min(60).max(100),
+    winner: z.enum(["host", "opponent"]),
+    judge_reason: z.array(z.string()).min(1).max(3),
+    penalty_score: z.number().int().min(0).max(10),
+    penalty_evidence: z.array(z.string()).max(5)
+});
+
+const JudgingDebate = z.object({
+    host: ParticipantJudging,
+    opponent: ParticipantJudging,
+});
+
+const response_old = await openai.responses.parse({
+    model: "gpt-5.6-luna",
+    input: [
+        {
+            role: "system",
+            content: SYSTEM_PROMPT_PREVIOUS
+        },
+        { role: "user", content: JSON.stringify(debate) },
+    ],
+    text: {
+        format: zodTextFormat(JudgingDebate, "judging_debate"),
+    },
+});
+
+console.log(JSON.stringify(response_old.output_parsed, null, 2));
+
+
+// 개선된 버전 (8/20)
 
 const DebatePerformance = z.object({
     logic_score: z.number().int().min(0).max(30),
