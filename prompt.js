@@ -1,3 +1,9 @@
+const SYSTEM_PROMPT_PREVIOUS =
+    `입력은 일대일 토론 대화 스크립트이며, 답변은 토론 대결의 판정 결과다. 
+    이때 penalty_score 필드에는 만약 토론자가 욕설, 토론과 관계없는 발언, 예의없는 발언을 했을 때 재량으로 최대 10점을 부여하도록 한다. 
+    penalty를 크게 부여할수록 점수를 크게 부여한다. 그러한 사항이 없으면 0점이다. 
+`;
+
 const SYSTEM_PROMPT_PERFORMANCE =
     `입력은 일대일 토론 대화 스크립트이며, 답변은 토론 대결의 판정 결과이다.
 이때 오직 토론을 얼마나 잘했는가만을 판단한다.
@@ -39,4 +45,4 @@ severe:
 none 단계일 경우, 배열에 항목을 넣지 않는다.
 `    ;
 
-export { SYSTEM_PROMPT_PERFORMANCE, SYSTEM_PROMPT_VIOLATION };
+export { SYSTEM_PROMPT_PREVIOUS, SYSTEM_PROMPT_PERFORMANCE, SYSTEM_PROMPT_VIOLATION };
