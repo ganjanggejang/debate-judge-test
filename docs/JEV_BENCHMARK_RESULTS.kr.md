@@ -1,5 +1,7 @@
 # Jev vs OpenAI 토론 채점 결과: 토론별 점수와 승자 일관성
 
+**한국어** | [English](JEV_BENCHMARK_RESULTS.en.md)
+
 > 작성일: 2026-09-21 · 데이터: `icc/data/raw-1789970405493.json` (본 수집) · 설계: `JEV_BENCHMARK_PLAN.md`
 > 표는 `npm run analyze -- icc/data/raw-1789970405493.json`으로 다시 만들 수 있습니다 (API 호출 없음).
 
