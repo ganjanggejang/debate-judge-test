@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { computeICC1 } from "./icc-math.js";
+import { computeICC1, fQuantile, fCdf } from "./icc-math.js";
 
 // 검증 데이터셋: Shrout & Fleiss (1979) Table 2.
 // 6 targets(subject) x 4 judges(repetition).
@@ -72,4 +72,79 @@ test("computeICC1 throws on fewer than 2 repetitions", () => {
 
 test("computeICC1 throws on unbalanced design", () => {
     assert.throws(() => computeICC1([[1, 2, 3], [4, 5]]));
+});
+
+// 95% CI 참조값: R `psych::ICC(sf)`가 같은 Shrout & Fleiss (1979) 데이터에 대해 보고하는 값.
+//   ICC1:  lower -0.13, upper 0.72
+//   ICC1k: lower -0.88, upper 0.91
+test("computeICC1 confidence intervals match psych::ICC reference values", () => {
+    const { status, ci1_1, ci1_k } = computeICC1(SHROUT_FLEISS_1979);
+    assert.equal(status, "ok");
+    const near = (actual, expected) =>
+        assert.ok(Math.abs(actual - expected) < 0.01, `expected ~${expected}, got ${actual}`);
+    near(ci1_1[0], -0.13);
+    near(ci1_1[1], 0.72);
+    near(ci1_k[0], -0.88);
+    near(ci1_k[1], 0.91);
+});
+
+test("fQuantile matches F distribution table values", () => {
+    // F_{0.95}(1, 10) = 4.9646, F_{0.975}(5, 18) = 3.3820, F_{0.99}(2, 10) = 7.5594
+    assert.ok(Math.abs(fQuantile(0.95, 1, 10) - 4.9646) < 1e-3);
+    assert.ok(Math.abs(fQuantile(0.975, 5, 18) - 3.382) < 1e-3);
+    assert.ok(Math.abs(fQuantile(0.99, 2, 10) - 7.5594) < 1e-3);
+    // 분위수와 누적분포함수는 서로 역함수
+    assert.ok(Math.abs(fCdf(fQuantile(0.9, 4, 7), 4, 7) - 0.9) < 1e-9);
+});
+
+test("computeICC1 CI contains the point estimate", () => {
+    const data = [
+        [70, 72, 71],
+        [80, 79, 83],
+        [65, 66, 64],
+        [90, 88, 91],
+    ];
+    const { icc1_1, icc1_k, ci1_1, ci1_k } = computeICC1(data);
+    assert.ok(ci1_1[0] <= icc1_1 && icc1_1 <= ci1_1[1]);
+    assert.ok(ci1_k[0] <= icc1_k && icc1_k <= ci1_k[1]);
+});
+
+test("computeICC1 defines ICC = 1 when there is no within-subject variance", () => {
+    const result = computeICC1([
+        [10, 10, 10],
+        [20, 20, 20],
+        [35, 35, 35],
+    ]);
+    assert.equal(result.status, "no-within-variance");
+    assert.equal(result.icc1_1, 1);
+    assert.equal(result.icc1_k, 1);
+    assert.deepEqual(result.ci1_1, [1, 1]);
+});
+
+test("computeICC1 returns undefined status (not NaN) when there is no between-subject variance", () => {
+    for (const data of [
+        [
+            [5, 5],
+            [5, 5],
+        ],
+        [
+            [4, 6],
+            [6, 4],
+        ],
+    ]) {
+        const result = computeICC1(data);
+        assert.equal(result.status, "undefined");
+        assert.equal(result.icc1_1, null);
+        assert.equal(result.icc1_k, null);
+        assert.equal(result.ci1_1, null);
+    }
+});
+
+test("computeICC1 treats floating-point noise as zero within-subject variance", () => {
+    const x = 0.1 + 0.2; // 0.30000000000000004
+    const result = computeICC1([
+        [x, 0.3],
+        [1.5, 1.5],
+    ]);
+    assert.equal(result.status, "no-within-variance");
 });
