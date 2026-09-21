@@ -1,3 +1,4 @@
 *.seed.json
 .env
 /icc/data
+/node_modules
