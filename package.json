@@ -1,3 +1,20 @@
 {
-    "type": "module"
+    "name": "debate-judge-test",
+    "type": "module",
+    "engines": {
+        "node": ">=20"
+    },
+    "scripts": {
+        "check-env": "node --env-file=.env icc/check-env.js",
+        "collect": "node --env-file=.env icc/collect.js",
+        "report": "node icc/report.js",
+        "analyze": "node icc/analyze.js",
+        "test": "node --test \"icc/**/*.test.js\""
+    },
+    "dependencies": {
+        "@typesafe-ai/sdk": "^0.6.0",
+        "openai": "^7.20.0",
+        "undici": "^8.10.2",
+        "zod": "^4.6.5"
+    }
 }
