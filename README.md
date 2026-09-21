@@ -1,4 +1,4 @@
-# gpt-api-test
+# debate-judge-test
 
 ## 본 실행 (기본값: subjects=3, k=10, 총 60회 호출)
 node icc/collect.js
